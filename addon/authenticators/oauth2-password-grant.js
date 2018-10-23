@@ -11,6 +11,7 @@ import {
 } from '@ember/polyfills';
 import Ember from 'ember';
 import BaseAuthenticator from './base';
+import isFastBootCPM from '../utils/is-fastboot';
 import fetch from 'fetch';
 
 const assign = emberAssign || merge;
@@ -123,6 +124,8 @@ export default BaseAuthenticator.extend({
       return { Authorization: `Basic ${base64ClientId}` };
     }
   }),
+
+  _isFastBoot: isFastBootCPM(),
 
   /**
     When authentication fails, the rejection callback is provided with the whole
@@ -372,6 +375,9 @@ export default BaseAuthenticator.extend({
   },
 
   _scheduleAccessTokenRefresh(expiresIn, expiresAt, refreshToken) {
+    if (this.get('_isFastBoot')) {
+      return;
+    }
     const refreshAccessTokens = this.get('refreshAccessTokens');
     if (refreshAccessTokens) {
       const now = (new Date()).getTime();
